@@ -1,0 +1,18 @@
+---
+extends:
+  - airbnb-base
+  - plugin:import/warnings
+
+env:
+  browser: 1
+
+plugins:
+  - dependencies
+
+settings:
+  import/resolver: webpack
+
+parser: babel-eslint
+
+globals:
+  inject: false
