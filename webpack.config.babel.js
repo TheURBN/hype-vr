@@ -43,6 +43,13 @@ export default {
           `image-webpack-loader?${JSON.stringify(imageminOptions)}`,
         ],
       },
+      {
+        test: /\.ya?ml$/,
+        loader: [
+          'json-loader',
+          'yaml-loader',
+        ],
+      },
     ],
   },
 

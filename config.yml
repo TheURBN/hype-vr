@@ -1,0 +1,36 @@
+api:
+  # websocketUrl: 'ws://localhost:8080/v1/ws/'
+  websocketUrl: 'wss://turg-svc.herokuapp.com/v1/ws/'
+  mapping:
+    x: x
+    y: z
+    z: y
+
+world:
+  size:
+    width: 1000
+    depth: 1000
+    height: 100
+  colors:
+    - '#ffffff'
+    - '#000000'
+    - '#f44336'
+    - '#e91e63'
+    - '#9c27b0'
+    - '#673ab7'
+    - '#3f51b5'
+    - '#2196f3'
+    - '#03a9f4'
+    - '#00bcd4'
+    - '#009688'
+    - '#4caf50'
+    - '#8bc34a'
+    - '#cddc39'
+    - '#ffeb3b'
+    - '#ffc107'
+    - '#ff9800'
+    - '#ff5722'
+    - '#795548'
+    - '#9e9e9e'
+    - '#607d8b'
+  batchDelay: 2000

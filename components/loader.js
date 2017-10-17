@@ -1,9 +1,27 @@
-import { map } from 'lodash/fp';
+import {
+  pick,
+  reduce,
+  flow,
+  groupBy,
+  map,
+} from 'lodash/fp';
+import { isArray } from 'lodash';
+import { intercept } from 'mobx';
+
+import config from '../config.yml';
+import world from '../stores/world';
+
+const Three = window.THREE;
+
+const position = pick(['x', 'y', 'z']);
 
 
-function position(x, y, z) {
-  return { x, y, z };
-}
+// const newVoxel = map((voxel) => {
+//   world.addVoxel(voxel);
+// });
+
+const newVoxels = v => world.addVoxels(v);
+const reduceF = (func, acc) => data => reduce(func, acc())(data);
 
 
 export default {
@@ -13,31 +31,80 @@ export default {
     },
   },
 
-  async init() {
-    let response;
+  createVoxels(voxels) {
+    const scene = this.el.sceneEl.object3D;
 
-    try {
-      response = await fetch(this.data.url);
-    } catch (e) {
-      return;
-    }
+    const createObject = flow(
+      reduceF((acc, obj) => {
+        const geometry = new Three.BoxGeometry(1, 1, 1);
 
-    if (!response.ok) {
-      return;
-    }
+        geometry.translate(obj.x, obj.y, obj.z);
 
-    const data = await response.json();
-    const scene = document.querySelector('a-scene');
+        acc.geometry.merge(geometry, geometry.matrix);
+        acc.count += 1;
+        acc.owner = acc.owner || obj.owner;
 
-    const createVoxels = map((obj) => {
-      const newVoxel = document.createElement('a-entity');
+        return acc;
+      }, () => ({
+        geometry: new Three.Geometry(),
+        count: 0,
+      })),
+      (result) => {
+        const color = config.world.colors[result.owner];
 
-      newVoxel.setAttribute('mixin', 'voxel');
-      newVoxel.setAttribute('position', position(...obj));
+        const material = new Three.MeshStandardMaterial({
+          color,
+        });
+        const box = new Three.Mesh(result.geometry, material);
 
-      scene.appendChild(newVoxel);
+        scene.add(box);
+
+        console.log(`Created ${result.count} voxels for user ${result.owner}`);
+      },
+    );
+
+    const createObjects = flow(
+      groupBy('owner'),
+      map(createObject),
+    );
+
+    createObjects(voxels);
+  },
+
+  getVoxels(pos, range = 1000) {
+    this.ws.send(JSON.stringify({
+      method: 'get',
+      args: {
+        ...pos,
+        range,
+      },
+    }));
+  },
+
+  init() {
+    this.ws = new WebSocket(config.api.websocketUrl);
+
+    this.ws.addEventListener('message', (event) => {
+      let data = JSON.parse(event.data);
+
+      if (!isArray(data)) {
+        data = [data];
+      }
+
+      newVoxels(data);
     });
 
-    createVoxels(data.voxels);
+    this.ws.addEventListener('open', () => {
+      this.getVoxels(position({
+        x: 500,
+        y: 500,
+      }));
+    });
+
+    intercept(world.voxels, (voxels) => {
+      this.createVoxels(voxels.added);
+
+      return voxels;
+    });
   },
 };

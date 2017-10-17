@@ -5,33 +5,30 @@ html(lang=en)
     title Test
 
   body
-    a-scene
+    a-scene(stats)
       a-assets
         a-mixin(
           id='voxel',
           geometry='primitive: box; height: 1; width: 1; depth: 1;',
-          material='color: green',
           snap='offset: 0.5 0.5 0.5; snap: 1 1 1'
         )
 
-        img#sky(src='img/sky.jpg')
+        img#sky(src='img/sky1.jpg')
 
-      a-entity(
-        position='0 0 5',
-        rotation='0 300 0',
-      )
-        a-camera(gamepad-controls)
+      a-entity(player)
 
-      a-plane(
-        rotation='-90 0 0',
-        width='1000',
-        height='1000',
-        color='#0C0C0C',
-      )
+      a-entity(world)
+
+      a-entity(voxel-loader)
 
       a-sky(
         theta-length='100',
         material='src: #sky',
       )
 
-      a-entity(voxel-loader)
+      a-entity#base(
+        mixin='voxel',
+        position='500 500 1',
+        geometry='buffer: false; skipCache: true',
+        material='color: green',
+      )
