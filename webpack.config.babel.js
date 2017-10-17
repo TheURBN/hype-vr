@@ -74,7 +74,7 @@ export default {
   devServer: {
     contentBase: path.join(__dirname, 'dist'),
     compress: true,
-    port: 8081,
+    port: process.env.PORT || 8081,
     host: '0.0.0.0',
     disableHostCheck: true,
     historyApiFallback: {
