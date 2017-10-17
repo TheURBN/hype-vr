@@ -5,7 +5,10 @@ import {
   groupBy,
   map,
 } from 'lodash/fp';
-import { isArray } from 'lodash';
+import {
+  isArray,
+  get,
+} from 'lodash';
 import { intercept } from 'mobx';
 
 import config from '../config.yml';
@@ -50,12 +53,27 @@ export default {
         count: 0,
       })),
       (result) => {
-        const color = config.world.colors[result.owner];
+        let box = get(this.meshes, result.owner);
 
-        const material = new Three.MeshStandardMaterial({
-          color,
-        });
-        const box = new Three.Mesh(result.geometry, material);
+        if (box) {
+          scene.remove(box);
+
+          const geometry = box.geometry.clone();
+
+          geometry.merge(result.geometry, result.geometry.matrix);
+
+          box.geometry.dispose();
+          box.geometry = geometry;
+        } else {
+          const color = config.world.colors[result.owner];
+          const material = new Three.MeshStandardMaterial({
+            color,
+          });
+
+          box = new Three.Mesh(result.geometry, material);
+
+          this.meshes[result.owner] = box;
+        }
 
         scene.add(box);
 
@@ -71,9 +89,9 @@ export default {
     createObjects(voxels);
   },
 
-  getVoxels(pos, range = 1000) {
+  getVoxels(pos, range = 100) {
     this.ws.send(JSON.stringify({
-      method: 'get',
+      type: 'range',
       args: {
         ...pos,
         range,
@@ -82,10 +100,12 @@ export default {
   },
 
   init() {
+    this.meshes = {};
     this.ws = new WebSocket(config.api.websocketUrl);
+    this.interval = null;
 
     this.ws.addEventListener('message', (event) => {
-      let data = JSON.parse(event.data);
+      let data = JSON.parse(event.data).data;
 
       if (!isArray(data)) {
         data = [data];
@@ -99,6 +119,14 @@ export default {
         x: 500,
         y: 500,
       }));
+
+      this.interval = setInterval(() => this.ws.send(JSON.stringify({})), 10000);
+    });
+
+    this.ws.addEventListener('close', () => {
+      clearInterval(this.interval);
+
+      this.interval = null;
     });
 
     intercept(world.voxels, (voxels) => {
