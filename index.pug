@@ -7,12 +7,6 @@ html(lang=en)
   body
     a-scene(stats)
       a-assets
-        a-mixin(
-          id='voxel',
-          geometry='primitive: box; height: 1; width: 1; depth: 1;',
-          snap='offset: 0.5 0.5 0.5; snap: 1 1 1'
-        )
-
         img#sky(src='img/sky1.jpg')
 
       a-entity(player)
@@ -24,11 +18,4 @@ html(lang=en)
       a-sky(
         theta-length='100',
         material='src: #sky',
-      )
-
-      a-entity#base(
-        mixin='voxel',
-        position='500 500 1',
-        geometry='buffer: false; skipCache: true',
-        material='color: green',
       )

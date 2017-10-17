@@ -53,29 +53,29 @@ export default {
         count: 0,
       })),
       (result) => {
-        let box = get(this.meshes, result.owner);
+        let mesh = get(this.meshes, result.owner);
 
-        if (box) {
-          scene.remove(box);
+        if (mesh) {
+          scene.remove(mesh);
 
-          const geometry = box.geometry.clone();
+          const geometry = mesh.geometry.clone();
 
           geometry.merge(result.geometry, result.geometry.matrix);
 
-          box.geometry.dispose();
-          box.geometry = geometry;
+          mesh.geometry.dispose();
+          mesh.geometry = geometry;
         } else {
           const color = config.world.colors[result.owner];
           const material = new Three.MeshStandardMaterial({
             color,
           });
 
-          box = new Three.Mesh(result.geometry, material);
+          mesh = new Three.Mesh(result.geometry, material);
 
-          this.meshes[result.owner] = box;
+          this.meshes[result.owner] = mesh;
         }
 
-        scene.add(box);
+        scene.add(mesh);
 
         console.log(`Created ${result.count} voxels for user ${result.owner}`);
       },
@@ -99,10 +99,8 @@ export default {
     }));
   },
 
-  init() {
-    this.meshes = {};
+  connect() {
     this.ws = new WebSocket(config.api.websocketUrl);
-    this.interval = null;
 
     this.ws.addEventListener('message', (event) => {
       let data = JSON.parse(event.data).data;
@@ -113,20 +111,22 @@ export default {
 
       newVoxels(data);
     });
+  },
+
+  init() {
+    this.meshes = {};
+
+    this.connect();
 
     this.ws.addEventListener('open', () => {
       this.getVoxels(position({
         x: 500,
         y: 500,
       }));
-
-      this.interval = setInterval(() => this.ws.send(JSON.stringify({})), 10000);
     });
 
     this.ws.addEventListener('close', () => {
-      clearInterval(this.interval);
-
-      this.interval = null;
+      this.connect();
     });
 
     intercept(world.voxels, (voxels) => {

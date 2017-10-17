@@ -12,11 +12,19 @@ export default {
       flyEnabled: true,
     });
 
+    camera.setAttribute('wasd-controls', {
+      fly: false,
+      acceleration: 200,
+    });
+
     const cameraPos = {
       x: Math.floor(size.width / 2),
       z: Math.floor(size.depth / 2),
       y: 1,
     };
+
+    cameraPos.x = 500;
+    cameraPos.z = 500;
 
     entity.setAttribute('position', {
       ...cameraPos,
