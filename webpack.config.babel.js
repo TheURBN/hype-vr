@@ -23,6 +23,12 @@ export default {
   module: {
     loaders: [
       {
+        test: /\.worker\.js$/,
+        loaders: [
+          'worker-loader',
+        ],
+      },
+      {
         test: /\.js$/,
         exclude: /node_modules/,
         loaders: [
@@ -49,6 +55,10 @@ export default {
           'json-loader',
           'yaml-loader',
         ],
+      },
+      {
+        test: /\.glsl$/,
+        loader: 'webpack-glsl-loader',
       },
     ],
   },

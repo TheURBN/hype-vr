@@ -7,7 +7,8 @@ import {
 } from 'lodash/fp';
 import {
   isArray,
-  get,
+  isEmpty,
+  last,
 } from 'lodash';
 import { intercept } from 'mobx';
 
@@ -18,14 +19,10 @@ const Three = window.THREE;
 
 const position = pick(['x', 'y', 'z']);
 
-
-// const newVoxel = map((voxel) => {
-//   world.addVoxel(voxel);
-// });
-
 const newVoxels = v => world.addVoxels(v);
 const reduceF = (func, acc) => data => reduce(func, acc())(data);
 
+const meshBatchSize = config.performance.meshBatchSize;
 
 export default {
   schema: {
@@ -34,7 +31,48 @@ export default {
     },
   },
 
-  createVoxels(voxels) {
+  getMesh(owner, initial = false) {
+    const createMesh = () => {
+      const color = config.world.colors[owner];
+      const material = new Three.MeshStandardMaterial({
+        color,
+      });
+
+      return {
+        m: new Three.Mesh(new Three.Geometry(), material),
+        count: 1,
+      };
+    };
+    const meshes = this.meshes[owner];
+
+    if (meshes && initial) {
+      return meshes[0].m;
+    } else if (meshes && !initial) {
+      const old = last(meshes);
+
+      if (old.count >= meshBatchSize || meshes.length === 1) {
+        console.log('Creating new mesh');
+        const m = createMesh();
+
+        meshes.push(m);
+
+        return m.m;
+      }
+
+      old.count += 1;
+
+      return old.m;
+    }
+
+
+    this.meshes[owner] = [
+      createMesh(),
+    ];
+
+    return last(this.meshes[owner]).m;
+  },
+
+  createVoxels(voxels, initial) {
     const scene = this.el.sceneEl.object3D;
 
     const createObject = flow(
@@ -44,6 +82,7 @@ export default {
         geometry.translate(obj.x, obj.y, obj.z);
 
         acc.geometry.merge(geometry, geometry.matrix);
+
         acc.count += 1;
         acc.owner = acc.owner || obj.owner;
 
@@ -53,27 +92,14 @@ export default {
         count: 0,
       })),
       (result) => {
-        let mesh = get(this.meshes, result.owner);
+        const mesh = this.getMesh(result.owner, initial);
 
-        if (mesh) {
-          scene.remove(mesh);
+        scene.remove(mesh);
 
-          const geometry = mesh.geometry.clone();
+        mesh.geometry.merge(result.geometry, result.geometry.matrix);
 
-          geometry.merge(result.geometry, result.geometry.matrix);
-
-          mesh.geometry.dispose();
-          mesh.geometry = geometry;
-        } else {
-          const color = config.world.colors[result.owner];
-          const material = new Three.MeshStandardMaterial({
-            color,
-          });
-
-          mesh = new Three.Mesh(result.geometry, material);
-
-          this.meshes[result.owner] = mesh;
-        }
+        mesh.geometry.elementsNeedUpdate = true;
+        mesh.geometry.verticesNeedUpdate = true;
 
         scene.add(mesh);
 
@@ -89,7 +115,7 @@ export default {
     createObjects(voxels);
   },
 
-  getVoxels(pos, range = 100) {
+  getVoxels(pos, range = 10) {
     this.ws.send(JSON.stringify({
       type: 'range',
       args: {
@@ -122,7 +148,7 @@ export default {
       this.getVoxels(position({
         x: 500,
         y: 500,
-      }));
+      }), config.performance.initialRange);
     });
 
     this.ws.addEventListener('close', () => {
@@ -130,7 +156,7 @@ export default {
     });
 
     intercept(world.voxels, (voxels) => {
-      this.createVoxels(voxels.added);
+      this.createVoxels(voxels.added, isEmpty(this.meshes));
 
       return voxels;
     });

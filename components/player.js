@@ -14,7 +14,7 @@ export default {
 
     camera.setAttribute('wasd-controls', {
       fly: false,
-      acceleration: 200,
+      acceleration: 65,
     });
 
     const cameraPos = {
