@@ -9,13 +9,16 @@ export default {
 
     plane.setAttribute('width', size.width);
     plane.setAttribute('height', size.depth);
+    plane.setAttribute('widthSegments', size.width);
+    plane.setAttribute('heightSegments', size.depth);
     plane.setAttribute('position', {
       x: Math.floor(size.width / 2),
-      y: 0,
+      y: -0.5,
       z: Math.floor(size.depth / 2),
     });
+
     plane.setAttribute('material', {
-      shader: 'flat',
+      shader: 'world-plane',
     });
 
     plane.setAttribute('rotation', {
@@ -23,8 +26,6 @@ export default {
       y: 0,
       z: 0,
     });
-
-    plane.setAttribute('color', '#000');
 
     scene.appendChild(plane);
   },

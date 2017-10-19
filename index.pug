@@ -5,7 +5,7 @@ html(lang=en)
     title Test
 
   body
-    a-scene(stats)
+    a-scene(stats, fog='type: linear; color: #000; near: 20; far: 40')
       a-assets
         img#sky(src='img/sky.jpg')
 
@@ -17,5 +17,5 @@ html(lang=en)
 
       a-sky(
         theta-length='100',
-        material='src: #sky',
+        material='src: #sky; fog: false',
       )

@@ -58,7 +58,12 @@ export default {
       },
       {
         test: /\.glsl$/,
-        loader: 'webpack-glsl-loader',
+        loader: 'shader-loader',
+        options: {
+          glsl: {
+            chunkPath: path.resolve('shaders/chunks'),
+          },
+        },
       },
     ],
   },

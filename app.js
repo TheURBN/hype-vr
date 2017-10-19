@@ -7,11 +7,11 @@ import loader from './components/loader';
 import world from './components/world';
 import player from './components/player';
 
-import cartoonish from './materials/cartoonish';
+import worldPlane from './materials/worldPlane';
 
 
 aFrame.registerComponent('world', world);
 aFrame.registerComponent('player', player);
 aFrame.registerComponent('voxel-loader', loader);
 aFrame.registerComponent('gamepad-controls', gamepad);
-aFrame.registerShader('cartoonish', cartoonish);
+aFrame.registerShader('world-plane', worldPlane);

@@ -8,6 +8,7 @@ import {
   isArray,
   isEmpty,
   last,
+  find,
 } from 'lodash';
 import { intercept } from 'mobx';
 import * as Three from 'three';
@@ -22,7 +23,8 @@ const newVoxels = flow(
   chunk(10000),
   map(vox => world.addVoxels(vox)),
 );
-const meshBatchSize = config.performance.meshBatchSize;
+
+const mergeDistance = 100;
 
 export default {
   schema: {
@@ -31,11 +33,13 @@ export default {
     },
   },
 
-  getMesh(owner, initial = false) {
+  getMesh(owner, center, initial = false) {
     const createMesh = () => {
+      console.log('Creating new mesh');
       const color = config.world.colors[owner];
       const material = new Three.MeshStandardMaterial({
         color,
+        fog: false,
       });
 
       return {
@@ -48,20 +52,16 @@ export default {
     if (ownerMeshes && initial) {
       return ownerMeshes[0].m;
     } else if (ownerMeshes && !initial) {
-      const old = last(ownerMeshes);
+      const closestMesh = find(
+        ownerMeshes,
+        mesh => mesh.m.geometry.boundingSphere.center.distanceTo(center) <= mergeDistance,
+      );
+      const mesh = closestMesh || createMesh();
 
-      if (old.count >= meshBatchSize || ownerMeshes.length === 1) {
-        console.log('Creating new mesh');
-        const m = createMesh();
+      // eslint-disable-next-line no-plusplus
+      mesh.count++;
 
-        ownerMeshes.push(m);
-
-        return m.m;
-      }
-
-      old.count += 1;
-
-      return old.m;
+      return mesh.m;
     }
 
 
@@ -77,7 +77,10 @@ export default {
     const loader = new Three.JSONLoader();
 
     const { geometry } = loader.parse(obj.data);
-    const mesh = this.getMesh(obj.owner);
+
+    geometry.computeBoundingSphere();
+
+    const mesh = this.getMesh(obj.owner, geometry.boundingSphere.center);
 
     mesh.geometry.merge(geometry, geometry.matrix);
 
