@@ -1,9 +1,8 @@
 import {
   pick,
-  reduce,
-  flow,
-  groupBy,
+  chunk,
   map,
+  flow,
 } from 'lodash/fp';
 import {
   isArray,
@@ -11,17 +10,18 @@ import {
   last,
 } from 'lodash';
 import { intercept } from 'mobx';
+import * as Three from 'three';
 
 import config from '../config.yml';
 import world from '../stores/world';
-
-const Three = window.THREE;
+import LoaderWorker from '../workers/loader.worker';
 
 const position = pick(['x', 'y', 'z']);
 
-const newVoxels = v => world.addVoxels(v);
-const reduceF = (func, acc) => data => reduce(func, acc())(data);
-
+const newVoxels = flow(
+  chunk(10000),
+  map(vox => world.addVoxels(vox)),
+);
 const meshBatchSize = config.performance.meshBatchSize;
 
 export default {
@@ -43,18 +43,18 @@ export default {
         count: 1,
       };
     };
-    const meshes = this.meshes[owner];
+    const ownerMeshes = this.meshes[owner];
 
-    if (meshes && initial) {
-      return meshes[0].m;
-    } else if (meshes && !initial) {
-      const old = last(meshes);
+    if (ownerMeshes && initial) {
+      return ownerMeshes[0].m;
+    } else if (ownerMeshes && !initial) {
+      const old = last(ownerMeshes);
 
-      if (old.count >= meshBatchSize || meshes.length === 1) {
+      if (old.count >= meshBatchSize || ownerMeshes.length === 1) {
         console.log('Creating new mesh');
         const m = createMesh();
 
-        meshes.push(m);
+        ownerMeshes.push(m);
 
         return m.m;
       }
@@ -72,47 +72,22 @@ export default {
     return last(this.meshes[owner]).m;
   },
 
-  createVoxels(voxels, initial) {
+  render(obj) {
     const scene = this.el.sceneEl.object3D;
+    const loader = new Three.JSONLoader();
 
-    const createObject = flow(
-      reduceF((acc, obj) => {
-        const geometry = new Three.BoxGeometry(1, 1, 1);
+    const { geometry } = loader.parse(obj.data);
+    const mesh = this.getMesh(obj.owner);
 
-        geometry.translate(obj.x, obj.y, obj.z);
+    mesh.geometry.merge(geometry, geometry.matrix);
 
-        acc.geometry.merge(geometry, geometry.matrix);
+    mesh.geometry.computeBoundingSphere();
 
-        acc.count += 1;
-        acc.owner = acc.owner || obj.owner;
+    mesh.geometry.verticesNeedUpdate = true;
+    mesh.geometry.elementsNeedUpdate = true;
 
-        return acc;
-      }, () => ({
-        geometry: new Three.Geometry(),
-        count: 0,
-      })),
-      (result) => {
-        const mesh = this.getMesh(result.owner, initial);
-
-        scene.remove(mesh);
-
-        mesh.geometry.merge(result.geometry, result.geometry.matrix);
-
-        mesh.geometry.elementsNeedUpdate = true;
-        mesh.geometry.verticesNeedUpdate = true;
-
-        scene.add(mesh);
-
-        console.log(`Created ${result.count} voxels for user ${result.owner}`);
-      },
-    );
-
-    const createObjects = flow(
-      groupBy('owner'),
-      map(createObject),
-    );
-
-    createObjects(voxels);
+    scene.remove(mesh);
+    scene.add(mesh);
   },
 
   getVoxels(pos, range = 10) {
@@ -156,9 +131,16 @@ export default {
     });
 
     intercept(world.voxels, (voxels) => {
-      this.createVoxels(voxels.added, isEmpty(this.meshes));
+      this.worker.postMessage({
+        voxels: voxels.added,
+        initial: isEmpty(this.meshes),
+      });
 
       return voxels;
     });
+
+    this.worker = new LoaderWorker();
+
+    this.worker.onmessage = data => this.render(data.data);
   },
 };

@@ -1,5 +1,5 @@
 import { find } from 'lodash';
-import { map, filter } from 'lodash/fp';
+import { map, filter, forEach } from 'lodash/fp';
 import {
   observable,
 } from 'mobx';
@@ -8,6 +8,7 @@ import { mPosition } from '../common';
 
 
 const toM = map(mPosition);
+const NULL = '';
 
 
 function makeComparator(voxel) {
@@ -16,27 +17,20 @@ function makeComparator(voxel) {
     existing.z === voxel.z;
 }
 
+function coordinates(obj) {
+  return `${obj.x}_${obj.y}_${obj.z}`;
+}
+
 class World {
   @observable voxels = [];
+  voxelMap = Object.create(null);
 
   voxelExists(voxel) {
-    const comparator = makeComparator(voxel);
-
-    if (find(this.voxels, comparator)) {
-      return true;
-    }
-
-    return false;
+    return this.voxelMap[coordinates(voxel)] === NULL;
   }
 
-  addVoxel(voxel) {
-    const mVoxel = mPosition(voxel);
-
-    if (!this.voxelExists(mVoxel)) {
-      this.voxels.push({
-        ...mVoxel,
-      });
-    }
+  addToMap(voxel) {
+    this.voxelMap[coordinates(voxel)] = NULL;
   }
 
   addVoxels(voxels) {
@@ -44,6 +38,7 @@ class World {
     const mVoxels = nonExisting(toM(voxels));
 
     this.voxels.push(...mVoxels);
+    forEach(v => this.addToMap(v))(mVoxels);
   }
 
   getVoxel(position) {

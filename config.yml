@@ -13,7 +13,7 @@ world:
     height: 100
   colors:
     - '#ffffff'
-    - '#000000'
+    - '#4c4c4c'
     - '#f44336'
     - '#e91e63'
     - '#9c27b0'
@@ -36,4 +36,4 @@ world:
 
 performance:
   initialRange: 1000
-  meshBatchSize: 100
+  meshBatchSize: 1000
