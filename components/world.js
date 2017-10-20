@@ -3,18 +3,16 @@ import config from '../config.yml';
 
 export default {
   init() {
-    const size = config.world.size;
+    const side = config.world.size.side;
     const plane = document.createElement('a-plane');
     const scene = this.el.sceneEl;
 
-    plane.setAttribute('width', size.width);
-    plane.setAttribute('height', size.depth);
-    plane.setAttribute('widthSegments', size.width);
-    plane.setAttribute('heightSegments', size.depth);
+    plane.setAttribute('width', side);
+    plane.setAttribute('height', side);
     plane.setAttribute('position', {
-      x: Math.floor(size.width / 2),
+      x: Math.floor(side / 2),
       y: -0.5,
-      z: Math.floor(size.depth / 2),
+      z: Math.floor(side / 2),
     });
 
     plane.setAttribute('material', {

@@ -16,7 +16,7 @@ export default {
       fogColor: { value: new Three.Color() },
       fogNear: { value: 20 },
       fogFar: { value: 40 },
-      worldSize: { type: 'f', value: config.world.size.width },
+      worldSize: { type: 'f', value: config.world.size.side },
     };
 
     this.material = new Three.ShaderMaterial({

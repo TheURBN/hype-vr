@@ -1,5 +1,4 @@
 api:
-  # websocketUrl: 'ws://localhost:8080/v1/ws/'
   websocketUrl: 'wss://turg-svc.herokuapp.com/v1/ws/'
   mapping:
     x: x
@@ -8,8 +7,7 @@ api:
 
 world:
   size:
-    width: 5000
-    depth: 5000
+    side: 5000
     height: 100
   colors:
     - '#ffffff'
@@ -35,5 +33,5 @@ world:
     - '#607d8b'
 
 performance:
-  initialRange: 1000
+  initialRange: 5000
   meshBatchSize: 1000

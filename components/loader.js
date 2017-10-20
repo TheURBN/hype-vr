@@ -3,12 +3,11 @@ import {
   chunk,
   map,
   flow,
+  sortBy,
 } from 'lodash/fp';
 import {
   isArray,
   isEmpty,
-  last,
-  find,
 } from 'lodash';
 import { intercept } from 'mobx';
 import * as Three from 'three';
@@ -33,7 +32,10 @@ export default {
     },
   },
 
-  getMesh(owner, center, initial = false) {
+  getMesh(owner, center) {
+    const ownerMeshes = this.meshes[owner];
+    let created = false;
+
     const createMesh = () => {
       console.log('Creating new mesh');
       const color = config.world.colors[owner];
@@ -42,34 +44,52 @@ export default {
         fog: false,
       });
 
-      return {
-        m: new Three.Mesh(new Three.Geometry(), material),
+      created = true;
+
+      const result = {
+        mesh: new Three.Mesh(new Three.Geometry(), material),
         count: 1,
       };
+
+      this.meshes[owner].push(result);
+
+      return result;
     };
-    const ownerMeshes = this.meshes[owner];
 
-    if (ownerMeshes && initial) {
-      return ownerMeshes[0].m;
-    } else if (ownerMeshes && !initial) {
-      const closestMesh = find(
-        ownerMeshes,
-        mesh => mesh.m.geometry.boundingSphere.center.distanceTo(center) <= mergeDistance,
-      );
-      const mesh = closestMesh || createMesh();
+    if (!ownerMeshes) {
+      this.meshes[owner] = [];
 
-      // eslint-disable-next-line no-plusplus
-      mesh.count++;
+      const { mesh } = createMesh();
 
-      return mesh.m;
+      return {
+        created,
+        mesh,
+      };
     }
 
+    const findClosestMesh = flow(
+      sortBy(obj => obj.mesh.geometry.boundingSphere.center.distanceTo(center)),
+      (sorted) => {
+        const closest = sorted[0];
+        const localCenter = closest.mesh.geometry.boundingSphere.center;
 
-    this.meshes[owner] = [
-      createMesh(),
-    ];
+        if (localCenter.distanceTo(center) <= mergeDistance) {
+          return closest;
+        }
 
-    return last(this.meshes[owner]).m;
+        return null;
+      },
+    );
+
+    const obj = findClosestMesh(ownerMeshes) || createMesh();
+
+    // eslint-disable-next-line no-plusplus
+    obj.count++;
+
+    return {
+      created,
+      mesh: obj.mesh,
+    };
   },
 
   render(obj) {
@@ -80,17 +100,17 @@ export default {
 
     geometry.computeBoundingSphere();
 
-    const mesh = this.getMesh(obj.owner, geometry.boundingSphere.center);
+    const { created, mesh } = this.getMesh(obj.owner, geometry.boundingSphere.center);
 
     mesh.geometry.merge(geometry, geometry.matrix);
-
     mesh.geometry.computeBoundingSphere();
 
     mesh.geometry.verticesNeedUpdate = true;
     mesh.geometry.elementsNeedUpdate = true;
 
-    scene.remove(mesh);
-    scene.add(mesh);
+    if (created) {
+      scene.add(mesh);
+    }
   },
 
   getVoxels(pos, range = 10) {
