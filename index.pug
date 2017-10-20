@@ -15,7 +15,15 @@ html(lang=en)
 
       a-entity(voxel-loader)
 
-      a-sky(
-        theta-length='100',
-        material='src: #sky; fog: false',
-      )
+      a-entity
+        a-sky(
+          theta-length='100',
+          material='src: #sky; fog: false',
+        )
+        a-animation(
+          attribute='rotation',
+          dur='900000',
+          to='0 360 0',
+          repeat='indefinite',
+          easing='linear',
+        )
