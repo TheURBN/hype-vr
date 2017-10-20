@@ -9,6 +9,11 @@ html(lang=en)
       a-assets
         img#sky(src='img/sky.jpg')
 
+      a-light(
+        type='ambient',
+        color='#eee',
+      )
+
       a-entity(player)
 
       a-entity(world)
@@ -16,6 +21,11 @@ html(lang=en)
       a-entity(voxel-loader)
 
       a-entity
+        a-light(
+          type='directional',
+          position='-1 1 0',
+          color='#fff',
+        )
         a-sky(
           theta-length='100',
           material='src: #sky; fog: false',
