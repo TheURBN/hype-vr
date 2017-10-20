@@ -11,7 +11,7 @@ const imageminOptions = {
 
 
 export default {
-  entry: ['babel-polyfill', './app'],
+  entry: ['babel-polyfill', './app/app'],
 
   devtool: '#inline-source-map',
 
@@ -61,7 +61,7 @@ export default {
         loader: 'shader-loader',
         options: {
           glsl: {
-            chunkPath: path.resolve('shaders/chunks'),
+            chunkPath: path.resolve('app/shaders/chunks'),
           },
         },
       },
@@ -81,7 +81,7 @@ export default {
 
   resolve: {
     alias: {
-      styles: path.resolve(__dirname, 'styles'),
+      styles: path.resolve(__dirname, 'app/styles'),
       img: path.resolve(__dirname, 'img'),
     },
   },

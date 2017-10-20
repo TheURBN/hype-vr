@@ -1,4 +1,4 @@
-import config from '../config.yml';
+import config from '../../config.yml';
 
 const map = config.api.mapping;
 

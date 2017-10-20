@@ -1,4 +1,4 @@
-import config from '../config.yml';
+import config from '../../config.yml';
 import vertexShader from '../shaders/floor/vertex.glsl';
 import fragmentShader from '../shaders/floor/fragment.glsl';
 

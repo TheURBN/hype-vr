@@ -12,7 +12,7 @@ import {
 import { intercept } from 'mobx';
 import * as Three from 'three';
 
-import config from '../config.yml';
+import config from '../../config.yml';
 import world from '../stores/world';
 import LoaderWorker from '../workers/loader.worker';
 
@@ -34,13 +34,14 @@ export default {
 
   getMesh(owner, center) {
     const ownerMeshes = this.meshes[owner];
+
     let created = false;
 
     const createMesh = () => {
       console.log('Creating new mesh');
-      const color = config.world.colors[owner];
       const material = new Three.MeshStandardMaterial({
-        color,
+        color: 0xffffff,
+        vertexColors: Three.FaceColors,
         fog: false,
       });
 
@@ -101,12 +102,17 @@ export default {
     geometry.computeBoundingSphere();
 
     const { created, mesh } = this.getMesh(obj.owner, geometry.boundingSphere.center);
+    const color = config.world.colors[obj.owner];
+    const colorFaces = map(face => face.color.set(color));
 
     mesh.geometry.merge(geometry, geometry.matrix);
     mesh.geometry.computeBoundingSphere();
 
+    colorFaces(mesh.geometry.faces);
+
     mesh.geometry.verticesNeedUpdate = true;
     mesh.geometry.elementsNeedUpdate = true;
+    mesh.geometry.colorsNeedUpdate = true;
 
     if (created) {
       scene.add(mesh);

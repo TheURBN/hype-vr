@@ -7,7 +7,7 @@ import {
 } from 'lodash/fp';
 import * as Three from 'three';
 
-import config from '../config.yml';
+import config from '../../config.yml';
 
 const meshBatchSize = config.performance.meshBatchSize;
 
