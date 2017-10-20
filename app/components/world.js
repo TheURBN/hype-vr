@@ -10,9 +10,9 @@ export default {
     plane.setAttribute('width', side);
     plane.setAttribute('height', side);
     plane.setAttribute('position', {
-      x: Math.floor(side / 2),
+      x: 0,
       y: -0.5,
-      z: Math.floor(side / 2),
+      z: 0,
     });
 
     plane.setAttribute('material', {
