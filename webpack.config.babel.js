@@ -50,6 +50,12 @@ export default {
         ],
       },
       {
+        test: /\.mp4$/,
+        loaders: [
+          'file-loader?hash=sha256&digest=hex&name=[hash].[ext]',
+        ],
+      },
+      {
         test: /\.ya?ml$/,
         loader: [
           'json-loader',
@@ -70,7 +76,7 @@ export default {
 
   plugins: [
     new HtmlWebpackPlugin({
-      template: '!!html-loader!pug-html-loader?pretty&exports=false!./index.pug',
+      template: '!!html-loader?attrs[]=:src!pug-html-loader?pretty&exports=false!./index.pug',
       inject: 'head',
     }),
     new ExtractTextPlugin({

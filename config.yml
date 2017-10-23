@@ -34,4 +34,4 @@ world:
 
 performance:
   initialRange: 5000
-  meshBatchSize: 1000
+  meshBatchSize: 2000

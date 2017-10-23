@@ -8,6 +8,7 @@ html(lang=en)
     a-scene(stats, fog='type: linear; color: #000; near: 20; far: 40')
       a-assets
         img#sky(src='img/sky.jpg')
+        video#aaaaa(loop='true', src='img/aaa.mp4')
 
       a-light(
         type='ambient',
@@ -19,6 +20,17 @@ html(lang=en)
       a-entity(world)
 
       a-entity(voxel-loader)
+
+      a-entity(custom-events)
+
+      a-sky#aaaaaSky(
+        theta-length='100',
+        radius='4400',
+        material='src: #aaaaa; fog: false',
+        phi-start='180',
+        phi-length='180',
+        visible='false',
+      )
 
       a-entity
         a-light(
