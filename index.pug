@@ -25,8 +25,9 @@ html(lang=en)
 
       a-sky#aaaaaSky(
         theta-length='100',
-        radius='4400',
-        material='src: #aaaaa; fog: false',
+        theta-start='20',
+        radius='5000',
+        material='src: #aaaaa; fog: false; opacity: 0.5',
         phi-start='180',
         phi-length='180',
         visible='false',
@@ -41,6 +42,7 @@ html(lang=en)
         a-sky(
           theta-length='100',
           material='src: #sky; fog: false',
+          radius='5500',
         )
         a-animation(
           attribute='rotation',

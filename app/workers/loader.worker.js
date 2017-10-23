@@ -34,8 +34,16 @@ function createVoxels(voxels) {
     (result) => {
       console.log(`Created ${result.count} voxels for user ${result.owner}`);
 
+      result.geometry.computeBoundingSphere();
+
+      const sphere = result.geometry.boundingSphere;
+
       postMessage({
         data: result.geometry.toJSON(),
+        sphere: {
+          radius: sphere.radius,
+          center: [sphere.center.x, sphere.center.y, sphere.center.z],
+        },
         owner: result.owner,
       });
     },

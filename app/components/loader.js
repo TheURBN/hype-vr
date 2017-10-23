@@ -96,10 +96,13 @@ export default {
   render(obj) {
     const scene = this.el.sceneEl.object3D;
     const loader = new Three.JSONLoader();
+    const sphere = new Three.SphereGeometry(obj.sphere.radius);
+
+    sphere.translate(...obj.sphere.center);
 
     const { geometry } = loader.parse(obj.data);
 
-    geometry.computeBoundingSphere();
+    geometry.boundingSphere = sphere;
 
     const { created, mesh } = this.getMesh(obj.owner, geometry.boundingSphere.center);
     const color = config.world.colors[obj.owner];

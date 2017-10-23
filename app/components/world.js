@@ -1,3 +1,4 @@
+import * as Three from 'three';
 import config from '../../config.yml';
 
 
@@ -6,6 +7,8 @@ export default {
     const side = config.world.size.side;
     const plane = document.createElement('a-plane');
     const scene = this.el.sceneEl;
+
+    scene.renderer.setClearColor(new Three.Color(0, 0, 0), 1);
 
     plane.setAttribute('width', side);
     plane.setAttribute('height', side);
