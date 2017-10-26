@@ -8,14 +8,9 @@ export default {
     const camera = document.createElement('a-camera');
     const entity = document.createElement('a-entity');
 
-    camera.setAttribute('gamepad-controls', {
-      flyEnabled: true,
-    });
+    camera.setAttribute('gamepad-controls', {});
 
-    camera.setAttribute('wasd-controls', {
-      fly: true,
-      acceleration: 65,
-    });
+    camera.setAttribute('wasd-controls', {});
 
     const cameraPos = {
       x: Math.floor(side / 2),
@@ -25,9 +20,14 @@ export default {
 
     cameraPos.x = 500;
     cameraPos.z = 500;
+    cameraPos.y = 1;
 
     entity.setAttribute('position', {
       ...cameraPos,
+    });
+
+    entity.setAttribute('rotation', {
+      y: 180,
     });
 
     entity.appendChild(camera);

@@ -1,3 +1,4 @@
+import webpack from 'webpack';
 import path from 'path';
 import ExtractTextPlugin from 'extract-text-webpack-plugin';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
@@ -82,6 +83,9 @@ export default {
     new ExtractTextPlugin({
       filename: '[hash].css',
       allChunks: true,
+    }),
+    new webpack.DefinePlugin({
+      AUTH_UID: JSON.stringify(process.env.AUTH_UID),
     }),
   ],
 

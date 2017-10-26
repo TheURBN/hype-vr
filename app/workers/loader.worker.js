@@ -1,23 +1,83 @@
 import {
-  reduce,
+  filter,
   flow,
   groupBy,
   map,
-  chunk,
+  reduce,
 } from 'lodash/fp';
 import * as Three from 'three';
 
-import config from '../../config.yml';
-
-const meshBatchSize = config.performance.meshBatchSize;
+import { chunkCoordinates } from '../stores/world';
+import entities from '../entities';
 
 const reduceF = (func, acc) => data => reduce(func, acc())(data);
 
+const filters = {
+  common: filter(obj => !obj.capturable),
+  flag: filter({ capturable: true }),
+};
 
-function createVoxels(voxels) {
+
+function reportResult(chunkId) {
+  return (result) => {
+    result.geometry.computeBoundingSphere();
+
+    const sphere = result.geometry.boundingSphere;
+
+    postMessage({
+      chunkId,
+      namespace: 'loader',
+      type: 'common',
+      data: result.geometry.toJSON(),
+      sphere: {
+        radius: sphere.radius,
+        center: [sphere.center.x, sphere.center.y, sphere.center.z],
+      },
+      owner: result.owner,
+    });
+  };
+}
+
+
+function createFlags(chunk) {
+  if (!chunk[0]) {
+    return;
+  }
+
+  const chunkId = chunkCoordinates(chunk[0]);
+
+  const createObject = flow(
+    map((obj) => {
+      const g = new Three.Geometry();
+      const geometry = entities.flag.geometry();
+
+      geometry.translate(obj.x, obj.y, obj.z);
+
+      g.merge(geometry);
+
+      return {
+        geometry: g,
+        owner: obj.owner,
+      };
+    }),
+
+    map(reportResult(chunkId)),
+  );
+
+  createObject(chunk);
+}
+
+
+function createVoxels(chunk) {
+  if (!chunk[0]) {
+    return;
+  }
+
+  const chunkId = chunkCoordinates(chunk[0]);
+
   const createObject = flow(
     reduceF((acc, obj) => {
-      const geometry = new Three.BoxGeometry(1, 1, 1);
+      const geometry = entities.voxel.geometry();
 
       geometry.translate(obj.x, obj.y, obj.z);
 
@@ -31,42 +91,23 @@ function createVoxels(voxels) {
       geometry: new Three.Geometry(),
       count: 0,
     })),
-    (result) => {
-      console.log(`Created ${result.count} voxels for user ${result.owner}`);
 
-      result.geometry.computeBoundingSphere();
-
-      const sphere = result.geometry.boundingSphere;
-
-      postMessage({
-        data: result.geometry.toJSON(),
-        sphere: {
-          radius: sphere.radius,
-          center: [sphere.center.x, sphere.center.y, sphere.center.z],
-        },
-        owner: result.owner,
-      });
-    },
-  );
-
-  const processObject = flow(
-    chunk(meshBatchSize),
-    map(createObject),
+    reportResult(chunkId),
   );
 
   const createObjects = flow(
     groupBy('owner'),
-    map(processObject),
+    map(createObject),
   );
 
-  createObjects(voxels);
+  createObjects(chunk);
 }
 
 
 // eslint-disable-next-line no-undef
 onmessage = (event) => {
-  const voxels = event.data.voxels;
-  const initial = event.data.initial;
+  const { chunk } = event.data;
 
-  createVoxels(voxels, initial);
+  createVoxels(filters.common(chunk));
+  createFlags(filters.flag(chunk));
 };

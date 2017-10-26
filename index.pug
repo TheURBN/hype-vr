@@ -5,7 +5,7 @@ html(lang=en)
     title Test
 
   body
-    a-scene(stats, fog='type: linear; color: #000; near: 20; far: 40')
+    a-scene(stats, fog='type: linear; color: #000; near: 15; far: 30')
       a-assets
         img#sky(src='img/sky.jpg')
         video#aaaaa(loop='true', src='img/aaa.mp4')
@@ -17,6 +17,8 @@ html(lang=en)
 
       a-entity(player)
 
+      a-entity(websocket)
+
       a-entity(world)
 
       a-entity(voxel-loader)
@@ -26,7 +28,7 @@ html(lang=en)
       a-sky#aaaaaSky(
         theta-length='100',
         theta-start='20',
-        radius='5000',
+        radius='4700',
         material='src: #aaaaa; fog: false; opacity: 0.5',
         phi-start='180',
         phi-length='180',
@@ -46,7 +48,7 @@ html(lang=en)
         )
         a-animation(
           attribute='rotation',
-          dur='900000',
+          dur='1800000',
           to='0 360 0',
           repeat='indefinite',
           easing='linear',

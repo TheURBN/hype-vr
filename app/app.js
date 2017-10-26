@@ -3,6 +3,7 @@ import aFrame from 'aframe';
 import gamepad from 'aframe-gamepad-controls';
 
 
+import websocket from './components/websocket';
 import loader from './components/loader';
 import world from './components/world';
 import player from './components/player';
@@ -11,6 +12,7 @@ import customEvents from './components/customEvents';
 import worldPlane from './materials/worldPlane';
 
 
+aFrame.registerComponent('websocket', websocket);
 aFrame.registerComponent('world', world);
 aFrame.registerComponent('player', player);
 aFrame.registerComponent('voxel-loader', loader);

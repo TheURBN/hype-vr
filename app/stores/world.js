@@ -1,4 +1,3 @@
-import { find } from 'lodash';
 import { map, filter, forEach } from 'lodash/fp';
 import {
   observable,
@@ -8,44 +7,82 @@ import { mPosition } from '../common';
 
 
 const toM = map(mPosition);
-const NULL = '';
 
 
-function makeComparator(voxel) {
-  return existing => existing.x === voxel.x &&
-    existing.y === voxel.y &&
-    existing.z === voxel.z;
-}
+const chunkSize = {
+  x: 48,
+  y: 100,
+  z: 48,
+};
 
-function coordinates(obj) {
+
+export function coordinates(obj) {
   return `${obj.x}_${obj.y}_${obj.z}`;
 }
 
+
+export function chunkCoordinates(voxel, transform = coordinates) {
+  return transform({
+    x: Math.floor(voxel.x / chunkSize.x),
+    y: Math.floor(voxel.y / chunkSize.y),
+    z: Math.floor(voxel.z / chunkSize.z),
+  });
+}
+
+
 class World {
-  @observable voxels = [];
-  voxelMap = Object.create(null);
+  @observable.shallow chunks = new Map();
+
+  static newChunk() {
+    return {
+      data: observable.map(),
+    };
+  }
+
+  getChunk(voxel) {
+    return this.chunks.get(chunkCoordinates(voxel));
+  }
 
   voxelExists(voxel) {
-    return this.voxelMap[coordinates(voxel)] === NULL;
+    const cc = chunkCoordinates(voxel);
+    const c = coordinates(voxel);
+
+    if (this.chunks.has(cc) && this.chunks.get(cc).data.has(c)) {
+      const chunk = this.chunks.get(cc).data.get(c);
+
+      return chunk.owner === voxel.owner;
+    }
+
+    return false;
   }
 
   addToMap(voxel) {
-    this.voxelMap[coordinates(voxel)] = NULL;
+    const cc = chunkCoordinates(voxel);
+
+    if (!this.chunks.has(cc)) {
+      this.chunks.set(cc, World.newChunk());
+    }
+
+    const chunk = this.chunks.get(cc);
+
+    chunk.data.set(coordinates(voxel), voxel);
   }
 
   addVoxels(voxels) {
     const nonExisting = filter(v => !this.voxelExists(v));
     const mVoxels = nonExisting(toM(voxels));
 
-    this.voxels.push(...mVoxels);
     forEach(v => this.addToMap(v))(mVoxels);
   }
 
-  getVoxel(position) {
-    const mVoxel = mPosition(position);
-    const comparator = makeComparator(mVoxel);
+  deleteVoxel(voxel) {
+    const cc = chunkCoordinates(voxel);
+    const chunk = this.chunks.get(cc);
+    const c = coordinates(voxel);
 
-    return find(this.voxels, comparator);
+    if (chunk.data.has(c)) {
+      chunk.data.delete(c);
+    }
   }
 }
 

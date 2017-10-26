@@ -14,7 +14,7 @@ export default {
     plane.setAttribute('height', side);
     plane.setAttribute('position', {
       x: 0,
-      y: -0.5,
+      y: -0.51,
       z: 0,
     });
 
