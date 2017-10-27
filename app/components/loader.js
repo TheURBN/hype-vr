@@ -1,7 +1,4 @@
 import {
-  map,
-} from 'lodash/fp';
-import {
   intercept,
   reaction,
 } from 'mobx';
@@ -9,7 +6,6 @@ import * as Three from 'three';
 
 import entities from '../entities';
 import world from '../stores/world';
-import config from '../../config.yml';
 import LoaderWorker from '../workers/loader.worker';
 
 
@@ -68,8 +64,6 @@ export default {
     geometry.boundingSphere = sphere;
 
     const { mesh, oldMesh, created } = this.getOwnerMesh(obj.chunkId, obj.owner, type);
-    const color = config.world.colors[obj.owner];
-    const colorFaces = map(face => face.color.set(color));
 
     if (!created) {
       scene.remove(oldMesh);
@@ -77,8 +71,6 @@ export default {
 
     mesh.geometry.merge(geometry, geometry.matrix);
     mesh.geometry.computeBoundingSphere();
-
-    colorFaces(mesh.geometry.faces);
 
     mesh.geometry.verticesNeedUpdate = true;
     mesh.geometry.elementsNeedUpdate = true;

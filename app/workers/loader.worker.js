@@ -23,6 +23,9 @@ function reportResult(chunkId) {
     result.geometry.computeBoundingSphere();
 
     const sphere = result.geometry.boundingSphere;
+    const colorFaces = map(face => face.color.set(result.owner));
+
+    colorFaces(result.geometry.faces);
 
     postMessage({
       chunkId,
