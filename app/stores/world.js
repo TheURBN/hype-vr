@@ -1,4 +1,5 @@
 import { map, filter, forEach } from 'lodash/fp';
+import { identity } from 'lodash';
 import {
   observable,
 } from 'mobx';
@@ -33,9 +34,19 @@ export function chunkCoordinates(voxel, transform = coordinates) {
 class World {
   @observable.shallow chunks = new Map();
 
-  static newChunk() {
+  static newChunk(cc) {
+    const x = cc.x * chunkSize.x;
+    const y = cc.y * chunkSize.y;
+    const z = cc.z * chunkSize.z;
+
     return {
       data: observable.map(),
+      hi: {
+        x: x + chunkSize.x,
+        y: y + chunkSize.y,
+        z: z + chunkSize.z,
+      },
+      lo: { x, y, z },
     };
   }
 
@@ -60,7 +71,7 @@ class World {
     const cc = chunkCoordinates(voxel);
 
     if (!this.chunks.has(cc)) {
-      this.chunks.set(cc, World.newChunk());
+      this.chunks.set(cc, World.newChunk(chunkCoordinates(voxel, identity)));
     }
 
     const chunk = this.chunks.get(cc);

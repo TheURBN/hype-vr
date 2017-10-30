@@ -1,3 +1,4 @@
+/* eslint no-plusplus: 0 */
 import {
   filter,
   flow,
@@ -7,7 +8,10 @@ import {
 } from 'lodash/fp';
 import * as Three from 'three';
 
-import { chunkCoordinates } from '../stores/world';
+import {
+  coordinates,
+  chunkCoordinates,
+} from '../stores/world';
 import entities from '../entities';
 
 const reduceF = (func, acc) => data => reduce(func, acc())(data);
@@ -107,10 +111,65 @@ function createVoxels(chunk) {
 }
 
 
+function neighbour(voxel, xDiff, yDiff, zDiff) {
+  return coordinates({
+    x: voxel.x + xDiff,
+    y: voxel.y + yDiff,
+    z: voxel.z + zDiff,
+  });
+}
+
+
+function isSurrounded(chunk, voxel) {
+  for (let x = -1; x < 2; x++) {
+    for (let y = -1; y < 2; y++) {
+      for (let z = -1; z < 2; z++) {
+        if (!chunk.has(neighbour(voxel, x, y, z))) {
+          return false;
+        }
+      }
+    }
+  }
+
+  return true;
+}
+
+
+function optimise(chunk, lo, hi) {
+  const optimised = new Map();
+
+  for (let x = lo.x; x < hi.x; x++) {
+    for (let y = lo.y; y < hi.y; y++) {
+      for (let z = lo.z; z < hi.z; z++) {
+        const coord = coordinates({ x, y, z });
+
+        if (chunk.has(coord)) {
+          const voxel = chunk.get(coord);
+
+          if (!isSurrounded(chunk, voxel)) {
+            optimised.set(coord, voxel);
+          }
+        }
+      }
+    }
+  }
+
+  const optimisedAway = chunk.size - optimised.size;
+
+  if (optimisedAway > 0) {
+    console.log(`Optimised away ${optimisedAway} voxels`);
+  }
+
+  return Array.from(optimised.values());
+}
+
+
 // eslint-disable-next-line no-undef
 onmessage = (event) => {
-  const { chunk } = event.data;
+  const { data, hi, lo } = event.data;
 
-  createVoxels(filters.common(chunk));
-  createFlags(filters.flag(chunk));
+  const optimisedChunk = optimise(data, lo, hi);
+
+  createVoxels(filters.common(optimisedChunk));
+  createFlags(filters.flag(optimisedChunk));
 };

@@ -93,10 +93,16 @@ export default {
 
     intercept(world.chunks, (chunks) => {
       reaction(
-        () => chunks.newValue.data.values(),
-        (chunk) => {
+        () => ({
+          data: chunks.newValue.data.entries(),
+          hi: chunks.newValue.hi,
+          lo: chunks.newValue.lo,
+        }),
+        ({ data, hi, lo }) => {
           this.worker.postMessage({
-            chunk,
+            data: new Map(data),
+            hi,
+            lo,
           });
         },
         {
