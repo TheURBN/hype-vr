@@ -85,7 +85,7 @@ export default {
       allChunks: true,
     }),
     new webpack.DefinePlugin({
-      AUTH_UID: JSON.stringify(process.env.AUTH_UID),
+      AUTH_TOKEN: JSON.stringify(process.env.AUTH_TOKEN),
     }),
   ],
 

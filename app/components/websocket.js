@@ -1,52 +1,20 @@
-/* global AUTH_UID */
 import {
   get,
 } from 'lodash';
 
-import config from '../../config.yml';
 import world from '../stores/world';
-
-const uid = AUTH_UID;
+import Worker from '../workers/websocket.worker';
 
 
 export default {
   init() {
-    this.connect();
+    this.worker = new Worker();
 
-    this.ws.addEventListener('open', () => {
-      this.getVoxels({
-        x: 500,
-        y: 500,
-      }, config.performance.initialRange);
-    });
-
-    this.ws.addEventListener('close', () => {
-      this.connect();
-    });
-  },
-
-  connect() {
-    const url = new URL(config.api.websocketUrl);
-
-    url.searchParams.append('uid', uid);
-
-    this.ws = new WebSocket(url.toString());
-
-    this.ws.addEventListener('message', this.handleMessage);
-  },
-
-  getVoxels(pos, range = 10) {
-    this.ws.send(JSON.stringify({
-      type: 'range',
-      args: {
-        ...pos,
-        range,
-      },
-    }));
+    this.worker.onmessage = event => this.handleMessage(event);
   },
 
   handleMessage(event) {
-    const message = JSON.parse(event.data);
+    const message = event.data;
     const meta = get(message, 'meta', {});
     const handlers = {
       range: data => world.addVoxels(data),

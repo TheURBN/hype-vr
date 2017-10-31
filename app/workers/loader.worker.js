@@ -5,6 +5,7 @@ import {
   groupBy,
   map,
   reduce,
+  all,
 } from 'lodash/fp';
 import * as Three from 'three';
 
@@ -121,17 +122,23 @@ function neighbour(voxel, xDiff, yDiff, zDiff) {
 
 
 function isSurrounded(chunk, voxel) {
-  for (let x = -1; x < 2; x++) {
-    for (let y = -1; y < 2; y++) {
-      for (let z = -1; z < 2; z++) {
-        if (!chunk.has(neighbour(voxel, x, y, z))) {
-          return false;
-        }
-      }
+  const neighbours = [
+    [1, 0, 0],
+    [0, 1, 0],
+    [0, 0, 1],
+    [-1, 0, 0],
+    [0, -1, 0],
+    [0, 0, -1],
+  ];
+  const surrounded = all(([x, y, z]) => {
+    if (y < 0) {
+      return true;
     }
-  }
 
-  return true;
+    return chunk.has(neighbour(voxel, x, y, z));
+  });
+
+  return surrounded(neighbours);
 }
 
 
