@@ -1,5 +1,5 @@
 api:
-  websocketUrl: 'wss://turg-svc.herokuapp.com/v1/ws/'
+  websocketUrl: 'wss://turg.urbn.odn.pw/v1/ws/'
   mapping:
     x: x
     y: z
