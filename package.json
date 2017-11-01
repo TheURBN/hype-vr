@@ -49,8 +49,9 @@
     "yaml-loader": "^0.5.0"
   },
   "dependencies": {
-    "aframe": "aframevr/aframe",
+    "aframe": "spukst3r/aframe",
     "aframe-gamepad-controls": "^0.6.0",
+    "firebase": "^4.6.0",
     "lodash": "^4.17.4",
     "mobx": "^3.3.1",
     "three": "^0.87.1"

@@ -1,8 +1,4 @@
-/* global AUTH_TOKEN */
 import config from '../../config.yml';
-
-
-const token = AUTH_TOKEN;
 
 
 function handleMessage(event) {
@@ -10,7 +6,7 @@ function handleMessage(event) {
 }
 
 
-function connect() {
+function connect(token) {
   const url = new URL(config.api.websocketUrl);
 
   url.searchParams.append('token', token);
@@ -34,8 +30,8 @@ function getVoxels(ws, pos, range = 10) {
 }
 
 
-function init() {
-  const ws = connect();
+function init(token) {
+  const ws = connect(token);
 
   ws.addEventListener('open', () => {
     getVoxels(ws, {
@@ -50,4 +46,9 @@ function init() {
 }
 
 
-init();
+// eslint-disable-next-line no-undef
+onmessage = (event) => {
+  const token = event.data.token;
+
+  init(token);
+};
