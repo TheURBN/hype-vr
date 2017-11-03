@@ -21,8 +21,14 @@ export default {
 
       cameraRotation.x = -90;
     } else {
-      camera.setAttribute('gamepad-controls', {});
-      camera.setAttribute('wasd-controls', {});
+      camera.setAttribute('gamepad-controls', {
+        acceleration: 200,
+        flyEnabled: true,
+      });
+      camera.setAttribute('wasd-controls', {
+        acceleration: 200,
+        fly: true,
+      });
 
       cameraPos.y = 1;
 

@@ -18,8 +18,8 @@ import entities from '../entities';
 const reduceF = (func, acc) => data => reduce(func, acc())(data);
 
 const filters = {
-  common: filter(obj => !obj.capturable),
-  flag: filter({ capturable: true }),
+  common: filter(obj => !obj.name),
+  flag: filter(obj => !!obj.name),
 };
 
 
