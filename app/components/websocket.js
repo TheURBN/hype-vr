@@ -22,6 +22,7 @@ export default {
     }
 
     this.worker = new Worker();
+    this.videoTimeout = 0;
 
     this.worker.postMessage({
       token: await result.user.getIdToken(),
@@ -31,11 +32,25 @@ export default {
   },
 
   handleMessage(event) {
+    const cancelVideo = () => {
+      world.videoPlaying = false;
+
+      this.videoTimeout = 0;
+    };
     const message = event.data;
     const meta = get(message, 'meta', {});
     const handlers = {
       range: data => world.addVoxels(data),
       update: data => world.addVoxels([data]),
+      flagCaptured: () => {
+        if (this.videoTimeout) {
+          clearTimeout(this.videoTimeout);
+        }
+
+        world.videoPlaying = true;
+
+        this.videoTimeout = setTimeout(cancelVideo, 5000);
+      },
       unknown() {
         console.error(`Unknown ws message type: ${meta.type}`);
       },

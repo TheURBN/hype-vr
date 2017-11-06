@@ -1,20 +1,24 @@
+import { reaction } from 'mobx';
+
+import world from '../stores/world';
+
+
 export default {
   init() {
     const aaaSky = document.getElementById('aaaaaSky');
     const aaaVideo = document.getElementById('aaaaa');
 
-    window.addEventListener('keydown', (event) => {
-      if (event.key === 'F7') {
-        const previousState = aaaSky.getAttribute('visible');
-
-        if (previousState) {
-          aaaVideo.pause();
-        } else {
+    reaction(
+      () => world.videoPlaying,
+      (shouldBePlaying) => {
+        if (shouldBePlaying) {
           aaaVideo.play();
+        } else {
+          aaaVideo.pause();
         }
 
-        aaaSky.setAttribute('visible', !previousState);
-      }
-    });
+        aaaSky.setAttribute('visible', shouldBePlaying);
+      },
+    );
   },
 };

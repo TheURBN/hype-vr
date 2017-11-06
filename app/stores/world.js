@@ -33,6 +33,7 @@ export function chunkCoordinates(voxel, transform = coordinates) {
 
 class World {
   @observable.shallow chunks = new Map();
+  @observable videoPlaying = false;
 
   static newChunk(cc) {
     const x = cc.x * chunkSize.x;
